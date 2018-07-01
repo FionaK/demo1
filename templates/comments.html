@@ -1,23 +1,21 @@
 <html>
-<head></head>
+<head>
+	    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
 <body>
 	<h2>Write A Comment</h2>
       <div id="respond">
-        <form  method="post">
-          <p>
-            <input type="text" name="username" id="username" value="" size="22" />
-            <label for="name"><small>Name (required)</small></label>
-          </p>
-          <p>
-            <input type="text" name="email" id="email" value="" size="22" />
-            <label for="email"><small>Mail (required)</small></label>
-          </p>
+        <form  method="post">  
+        <p>
+        	<label>Enter Title</label><br>
+        	<input type="text" name="title"><br>
+        </p>     
+          
             <p>
-            <textarea name="comment" id="comment" cols="100%" rows="10"></textarea>
-            <label for="comment" style="display:none;"><small>Comment (required)</small></label>
+            <textarea name="content" cols="35" rows="10"></textarea>         
           </p>
           <p>
-            <input name="submit" type="submit" id="submit" value="Submit Form" />
+            <input type="submit" id="submit" value="Post Comments" />
             </p>
         </form>
         
