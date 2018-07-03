@@ -5,9 +5,9 @@ import hashlib
 import json
 
 access_token_path = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-#consumer_key="GrMDfVCKLTq6POB6gi0VBGqm6doxrFCn"
-#consumer_secret="PUSL6g38YYaXhXGv"
-response = requests.get(access_token_path, auth=("GrMDfVCKLTq6POB6gi0VBGqm6doxrFCn", "PUSL6g38YYaXhXGv")).text
+consumer_key="GrMDfVCKLTq6POB6gi0VBGqm6doxrFCn"
+consumer_secret="PUSL6g38YYaXhXGv"
+response = requests.get(access_token_path, auth=("consumer_key", "consumer_secret")).text
 res=json.loads(response)
 access_token=res ['access_token']
 
@@ -39,7 +39,7 @@ payload = {
 
 def get_access_token():
   url = self.api + self.access_token_path
-  response = payload.get(url, auth=("GrMDfVCKLTq6POB6gi0VBGqm6doxrFCn", "PUSL6g38YYaXhXGv"))
+  response = self.payload.get(url, auth=(self.consumer_key, self.consumer_secret))
   if response.status_code == 200:
     data = response.json()
     self.access_token = data['access_token']
