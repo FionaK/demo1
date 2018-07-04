@@ -1,4 +1,4 @@
-from flask import *
+from flask import Flask, jsonify, request
 app=Flask(__name__)
 details = {}
 posts=[]
@@ -31,6 +31,7 @@ def comments():
 	comment=request.get_json()["comment"]
 	posts.append(comment)
 	return jsonify({"message": "comment uploaded"})
+
 	
 @app.route('/display', methods=['GET'])
 def display_comments():
@@ -39,6 +40,11 @@ def display_comments():
 		output.update({posts.index(each):each})
 		return jsonify(output)
 
+@app.route('/delete_comment/<int:commentid>', methods=['DELETE'])	
+def delete_comment(commentid):
+	del posts[commentid]
+	return jsonify ({"message": "your comment has been deleted"})
+
 
 if __name__ == '__main__':
-	app.run(debug=True, port=5050)
+	app.run(debug=True, port=5080)
