@@ -1,8 +1,8 @@
 from flask import *
+import pymysql
 import datetime
 from functools import wraps
 import jwt
-import pymysql
 from models import connection, cur
 
 app=Flask(__name__)
@@ -11,15 +11,20 @@ app=Flask(__name__)
 
 app.config['SECRET_KEY']='fifi'
 
-connection = pymysql.connect(
-			host='localhost',
-			user='root',
-			password='',
-			db='details',
 
-	)
+def token_required(k):
+	@wraps(k)
+	def decorated(*args, **kwargs):
+		token = request.args.get('token')
+		if not token:
+			return jsonify({'message' : 'Token is missing'})
+		try:
+			data = jwt.decode(token, app.config['SECRET_KEY'])
+		except:
+			return jsonify({'message' : 'Token is invalid'})
+		return k(*args, **kwargs)
 
-
+	return decorated
 
 @app.route('/', methods= ['POST','GET'])
 def test():
@@ -45,38 +50,22 @@ def register():
 		connection.commit()
 				
 	finally:
-		connection.close()
+		pass
 		return jsonify({'message':'successful registration'})
-
-
-def token_required(k):
-	@wraps(k)
-	def decorated(*args, **kwargs):
-		token = request.args.get('token')
-		if not token:
-			return jsonify({'message' : 'Token is missing'})
-		try:
-			data = jwt.decode(token, app.config['SECRET_KEY'])
-		except:
-			return jsonify({'message' : 'Token is invalid'})
-		return k(*args, **kwargs)
-
-	return decorated
 
 
 @app.route('/login', methods= ['GET', 'POST'])
 def login():
 	username=request.get_json()['username']
 	password=request.get_json()['password']
-	auth= request.authorization
-
+	
 	cur.execute("SELECT COUNT(1) FROM user WHERE username = %s;", username)
 	if cur.fetchone()[0]:
 		cur.execute("SELECT password FROM user WHERE username = %s;", username)
 		for row in cur.fetchall():
 			if password == row[0]:
-				token= jwt.encode ({'user':auth.username, 'exp':datetime.datetime.utcnow + datetime.timedelta(minutes=15)}, app.config['SECRET_KEY'])
-				return jsonify({"message": "Login successful", 'access-token' : token.decode('UTF-8')})
+				token= jwt.encode({'user':username,'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=15)}, app.config['SECRET_KEY'])
+				return jsonify({"message": "Login successful", 'access_token' : token.decode('UTF-8')})
 			else:
 				return jsonify({'message': "invalid password or username"})
 	else:
@@ -97,7 +86,7 @@ def comments():
 				return jsonify({'message': 'Unable to comment. Try again'})
 		connection.commit()			
 	finally:
-		connection.close()
+		
 		return jsonify({'message':'successfully commented'})
 
 	
@@ -115,20 +104,19 @@ def delete_comment(commentid):
 	username=request.get_json()["username"]
 	try:
 		with connection.cursor() as cursor:
-			sql="DELETE FROM `comments` WHERE `comments`.`commentID`="+str(commentID)+" and `comments`.`username`= '"+username+"'"
+			sql="DELETE FROM `comments` WHERE `comments`.`commentID`='"+str(commentID)+"' and `comments`.`username`= '"+username+"'"
 			try:
 				cursor.execute(sql)
 			except:
 				return jsonify({'message' : 'please register first'})
 		connection.commit()
 	except:
-			connection.close()		
+		return jsonify({'message' : 'opops'})	
 	return jsonify ({"message": "your comment has been deleted"})
 
 @app.route('/get_info', methods=['GET'])
-@token_required
 def get_info():
-	cur.execute("SELECT * FROM users")
+	cur.execute("SELECT * FROM user")
 	rows=cur.fetchall()
 	return jsonify (rows)
 	
